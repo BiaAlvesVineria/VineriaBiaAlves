@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍷 Catálogo Vineria Bia Alves </title>
+    
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        /* --- ESTILO (CSS) --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; color: #333; padding-bottom: 50px; }
+        
+        /* Cabeçalho */
+        header { background-color: #5d021f; color: white; padding: 20px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .search-box { position: relative; max-width: 100%; margin: 15px auto 0; }
+        .search-box input { width: 100%; padding: 12px 15px 12px 40px; border-radius: 25px; border: none; font-size: 16px; outline: none; }
+        .search-box .material-icons { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #666; }
+
+        /* Grade Responsiva */
+        .catalog-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+            gap: 15px; 
+            padding: 15px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+
+        /* Cartão */
+        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .card img { width: 100%; height: 180px; object-fit: cover; transition: transform 0.3s; }
+        .card img:hover { transform: scale(1.03); }
+
+        .card-content { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .card h3 { font-size: 1rem; margin-bottom: 5px; color: #5d021f; }
+        .card p { font-size: 0.85rem; color: #666; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        .price { font-size: 1.2rem; color: #27ae60; font-weight: bold; margin-bottom: 10px; }
+        
+        /* Botões */
+        .btn { text-decoration: none; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; display: block; font-size: 0.9rem; transition: background-color 0.2s; cursor: pointer; border: none; }
+        .btn-buy { background-color: #5d021f; color: white; margin-top: 10px; }
+        .btn-buy:active { background-color: #3b0114; }
+        .btn-add-to-cart { background-color: #25d366; color: white; }
+        .btn-add-to-cart:active { background-color: #128c7e; }
+
+        /* Rodapé */
+        footer { text-align: center; padding: 20px; font-size: 0.8rem; color: #888; }
+        
+        /* --- ESTILOS DO CARRINHO --- */
+        
+        /* Botão Flutuante do Carrinho */
+        #cart-float-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #25d366;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 200;
+            transition: background-color 0.2s;
+        }
+        #cart-float-btn:hover { background-color: #128c7e; }
+        #cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #5d021f;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border-radius: 50%;
+            padding: 4px 7px;
+        }
+
+        /* Modal do Carrinho */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 300;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(2px);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 90%;
+            width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .close-btn {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover, .close-btn:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        #cart-items-list {
+            list-style: none;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        #cart-items-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        #cart-items-list li:last-child { border-bottom: none; }
+        
+        .item-info { flex-grow: 1; }
+        .item-info h4 { font-size: 0.9rem; margin: 0; color: #5d021f; }
+        .item-info p { font-size: 0.8rem; color: #666; margin: 0; }
+        .item-price { font-weight: bold; color: #27ae60; margin-left: 10px; width: 80px; text-align: right; }
+
+        .item-controls {
+            display: flex;
+            align-items: center;
+            margin-left: 15px;
+        }
+        .item-controls input {
+            width: 40px;
+            text-align: center;
+            margin: 0 5px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .item-controls button {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 5px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .item-controls button.remove-btn {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            margin-left: 10px;
+        }
+
+        #cart-total {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 2px solid #5d021f;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .total-price { color: #5d021f; }
+        
+        .empty-cart-message { text-align: center; padding: 20px; color: #666; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h3> Catálogo de Vinhos Vineria Bia Alves</h3>
+        <div class="search-box">
+            <span class="material-icons">search</span>
+            <input type="text" id="search-bar" placeholder="Buscar vinho por nome...">
+        </div>
+    </header>
+
+    <div id="catalog" class="catalog-grid">
+    </div>
+
+    <footer>
+        <p>Toque no botão flutuante 🟢 para finalizar seu pedido.</p>
+    </footer>
+
+    <div id="cart-float-btn">
+        <span class="material-icons">shopping_cart</span>
+        <span id="cart-count">0</span>
+    </div>
+
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Seu Carrinho</h2>
+                <span class="close-btn">&times;</span>
+            </div>
+            
+            <ul id="cart-items-list">
+                </ul>
+            
+            <div id="cart-total">
+                <span>Total:</span>
+                <span class="total-price" id="total-value">R$ 0,00</span>
+            </div>
+
+            <a href="#" target="_blank" class="btn btn-buy" id="btn-whatsapp-order">
+                <span class="material-icons" style="vertical-align: middle;">whatsapp</span> Enviar Pedido por WhatsApp
+            </a>
+            <p id="empty-cart-message" class="empty-cart-message" style="display:none;">Seu carrinho está vazio.</p>
+        </div>
+    </div>
+
+
+    <script>
+        // --- CONFIGURAÇÃO ---
+        const MEU_WHATSAPP = "5527999672027"; // <--- SEU NÚMERO AQUI
+        const product_data = [
+            // Produtos da primeira lista
+            { id: 976, name: "ALI JO RESERVA DOP", price: 189.00, description: "Tinto de Reserva Especial.", image: "https://acdn-us.mitiendanube.com/stores/001/302/570/products/351de61df2a0990c4177ba122e1ef7d5-ce91b9bbfb4a464f0917607328954877-1024-1024.webp" },
+            { id: 1193, name: "ALTOS DA DIVISA BORDO SUAVE 750ml", price: 40.00, description: "Bordô Suave de 750ml.", image: "https://cdn.awsli.com.br/2500x2500/2418/2418798/produto/312401477/f73250e2115290d7e67115cea3aa78b0-52fe29ccq1.jpg" },
+            { id: 888, name: "AMADEO PREMIUM CAB SAUVIGNON TN 750ml", price: 85.00, description: "Cabernet Sauvignon Premium.", image: "https://adegaalentejana.vteximg.com.br/arquivos/ids/155400-1000-1000/1616.jpg?v=637790626822330000" },
+            { id: 968, name: "ANGELICA ZAPATA CABERNET ", price: 319.00, description: "Cabernet Sauvignon.", image: "https://http2.mlstatic.com/D_NQ_NP_2X_903049-MLU72558411846_112023-F.webp" },
+            { id: 1317, name: "ANKA TTO 750ML", price: 164.00, description: "Vinho Tinto ANKA, 750ml.", image: "https://malelu.com.br/wp-content/uploads/2024/05/1000006867-standing-front.png" },
+            { id: 1231, name: "ANUBIS RED BLEND TT750", price: 89.00, description: "Blend Tinto ANUBIS, 750ml.", image: "https://vivavinho.vtexassets.com/arquivos/ids/165382-800-auto?v=638798454664830000&width=800&height=auto&aspect=true" },
+            { id: 1255, name: "ATLANTICO ALENTEJO TINTO TT750", price: 75.00, description: "Tinto de Alentejo, Portugal.", image: "https://grandvin.com.br/wp-content/uploads/2025/08/atlantico-tinto.jpg" },
+            { id: 1327, name: "BALDUZZI RESERVA CABERNET SAUVIGNON 750ML", price: 95.00, description: "Cabernet Sauvignon Reserva Chileno.", image: "https://cdn.dooca.store/2980/products/balduzzi-reserva-cs_1600x2000+fill_ffffff.jpg?v=1738685705" },
+            { id: 1328, name: "BALDUZZI RESERVA CARMENERE 750ML", price: 95.00, description: "Carmenère Reserva Chileno.", image: "https://cdn.dooca.store/2980/products/balduzzi-reserva-carmenere_1600x2000+fill_ffffff.png?v=1655593342" },
+            { id: 1224, name: "BARRICADO TT750", price: 69.00, description: "Vinho Tinto BARRICADO, 750ml.", image: "https://www.scotchstore.com.br/img/products/vinho-barricado-tinto-750-ml_1_1000.webp" },
+            { id: 1260, name: "BICHOT ORIGINES PINOT NOIR TT750", price: 279.00, description: "Pinot Noir Francês da linha Origines.", image: "https://cdn.dooca.store/2980/products/albert-bichot-bourgogne-pn_1600x2000+fill_ffffff.jpg?v=1739300495" },
+            { id: 1191, name: "BONDE ELETRICO BRANCO DOC VERDE 750ml", price: 70.00, description: "Vinho Verde Branco DOC.", image: "https://cdn.dooca.store/2698/products/ncsv6g8dodgyiwfveiiss4huyr7zcxxkjcrs_600x800+fill_ffffff.png?v=1732036890" },
+            { id: 1163, name: "BONS VENTOS BRANCO BC375", price: 39.00, description: "Vinho Branco Bons Ventos, 375ml.", image: "https://www.scotchstore.com.br/img/products/vinho-quinta-de-bons-ventos-branco-375-ml_1_1000.webp" },
+            { id: 1302, name: "BONS VENTOS BRANCO BC750", price: 72.00, description: "Vinho Branco Bons Ventos, 750ml.", image: "https://cdn.dooca.store/369/products/3mksoqhqmrotrkgbfggnbb4xzvl6nclju9yn_620x620.jpg?v=1701096114" },
+            { id: 1227, name: "BONS VENTOS DOURO TT750", price: 124.00, description: "Tinto do Douro, 750ml.", image: "https://www.scotchstore.com.br/img/products/vinho-bons-ventos-douro-750-ml_1_1000.webp" },
+            { id: 1304, name: "BONS VENTOS FRESH BRANCO BC750", price: 75.00, description: "Vinho Branco Fresh, 750ml.", image: "https://winetrader.com.br/cdn/shop/files/UCDH69027562698407-SKU-1571-4.jpg?v=1761663249&width=600" },
+            { id: 1309, name: "BONS VENTOS FRESH ROSE RS750", price: 75.00, description: "Vinho Rosé Fresh, 750ml.", image: "https://vivavinho.vtexassets.com/arquivos/ids/165135-800-auto?v=638727182429230000&width=800&height=auto&aspect=true" },
+            { id: 1229, name: "BONS VENTOS SUPERIOR TT750", price: 108.00, description: "Vinho Tinto Superior, 750ml.", image: "https://images.tcdn.com.br/img/img_prod/1417249/vinho_tinto_bons_ventos_superior_750ml_356343867_1_311ad1eb513cf15232751eda994c973c.jpg" },
+            { id: 1188, name: "BONS VENTOS TINTO TT750", price: 81.00, description: "Vinho Tinto Bons Ventos, 750ml.", image: "https://vivavinho.vtexassets.com/arquivos/ids/165002-1600-auto?v=638685092285500000&width=1600&height=auto&aspect=true" },
+            { id: 1228, name: "BONS VENTOS VINHO VERDE BC750", price: 68.04, description: "Vinho Verde Branco, 750ml.", image: "https://www.atlasvinhos.com.br/img/products/bons-ventos-vinho-verde_1_2000.webp" },
+            { id: 1203, name: "BORGO FIORE PINOT GRIGIO DOC 750ml", price: 81.00, description: "Pinot Grigio Italiano DOC.", image: "https://cdn.dooca.store/2980/products/borgo-il-fiore-pinot-grigio_1600x2000+fill_ffffff.jpg?v=1730233977" },
+            { id: 909, name: "BRUNELLO DI MONTALCINO (CAPRILI) 2018", price: 690.90, description: "Brunello de Montalcino Safra 2018.", image: "https://acdn-us.mitiendanube.com/stores/001/358/168/products/caprili-brunello-di-montalcino-2018-4c13fb82eb2904192d17052513941749-480-0.webp" },
+            { id: 1230, name: "C'EST LA VIE TINTO TT750", price: 110.00, description: "Vinho Tinto C'EST LA VIE, 750ml.", image: "https://winetrader.com.br/cdn/shop/files/UCDH69027562698407-SKU-1441-4.jpg?v=1761663684&width=600" },
+            { id: 1176, name: "CABECA DE TOIRO RESERVA TINTO TT750", price: 89.00, description: "Tinto Reserva CABECA DE TOIRO.", image: "https://divvino.vtexassets.com/arquivos/ids/159440-800-auto?v=638482901192870000&width=800&height=auto&aspect=true" },
+           
+            
+            // Novos Produtos (Segunda Lista)
+            { id: 1074, name: "CALAMARES VINHO VERDE BRANCO BC750", price: 70.00, description: "Vinho Verde Branco.", image: "https://www.scotchstore.com.br/img/products/vinho-calamares-vinho-verde-branco-750-ml_1_1000.webp" },
+            { id: 1161, name: "CALAMARES VINHO VERDE ROSE RS750", price: 72.00, description: "Vinho Verde Rosé.", image: "https://winetimebrasil.com.br/wp-content/uploads/2025/03/759f25bcfabdaeb47215e3ead293f350.jpeg" },
+            { id: 1069, name: "CALVET CELEBRATION BRUT BC750", price: 149.00, description: "Espumante Brut.", image: "https://grandvin.com.br/wp-content/uploads/2025/07/calvet-celebratio-blanc-brut-1.jpg" },
+            { id: 1068, name: "CALVET CELEBRATION BRUT ROSE RS750", price: 149.00, description: "Espumante Brut Rosé.", image: "https://www.atlasvinhos.com.br/img/products/espumante-frances-calvet-celebration-rose-750ml_1_2000.webp" },
+            { id: 1062, name: "CALVET COTES DE PROVENCE RS750", price: 179.00, description: "Vinho Rosé Cotes de Provence.", image: "https://vivavinho.vtexassets.com/arquivos/ids/164182-1600-auto?v=638368742262500000&width=1600&height=auto&aspect=true" },
+            { id: 1295, name: "CALVET PRESTIGE BORDEAUX TT750", price: 120.00, description: "Vinho Tinto Bordeaux Prestige.", image: "https://www.scotchstore.com.br/img/products/vinho-calvet-prestige-bordeaux-merlot-cab-750-ml_1_1000.webp" },
+            { id: 1296, name: "CALVET PRESTIGE COTES DU RHONE TT750", price: 135.00, description: "Vinho Tinto Côtes du Rhône Prestige.", image: "https://vivavinho.vtexassets.com/arquivos/ids/165211-1600-auto?v=638760191479730000&width=1600&height=auto&aspect=truev" },
+            { id: 1254, name: "CALVET ROSE D ANJOU RS750", price: 186.00, description: "Vinho Rosé d'Anjou.", image: "https://images.tcdn.com.br/img/img_prod/499027/vinho_calvet_rose_d_anjou_2023_4815_1_325873fd8ebe2441086dedd0b5a4efba.png" },
+            { id: 1298, name: "CALVET VARIETALS MERLOT TT750", price: 110.00, description: "Vinho Tinto Merlot Varietal.", image: "https://cdn.dooca.store/2980/products/calvet-varietalslifting-merlot_1600x2000+fill_ffffff.jpg?v=1730084887" },
+            { id: 1132, name: "CASA AMERICO BRANCO WINE DAO DOP", price: 106.00, description: "Vinho Branco Dão DOP.", image: "https://cdn.awsli.com.br/2500x2500/2577/2577543/produto/317688817/b626ef5c308a5d9781f6bca9adb17fc9-z2pwyoaqtp.png" },
+            { id: 1268, name: "CASAL MENDES 750ML", price: 69.00, description: "Vinho Branco Casal Mendes.", image: "https://images.tcdn.com.br/img/img_prod/1218868/vinho_verde_casal_mendes_doc_750ml_quinta_da_bacalhoa_5899_1_28f41d23965821cb9765fb85acb02d20.jpg" },
+            { id: 1129, name: "CASAS DEL BOSQUE CHARDONNAY RESERVA", price: 99.00, description: "Chardonnay Reserva.", image: "https://winetimebrasil.com.br/wp-content/uploads/2025/11/bc963a2b0e0a88eef707715da05b4161.png" },
+            { id: 1022, name: "CAPOCCIA CILIEGIOLO MAREMMA TOSCANA DOC 750ml", price: 179.00, description: "Ciliegiolo Maremma Toscana DOC.", image: "https://domoexpress.com.br/media/catalog/product/cache/1/image/9df78eab33525d08d6e5fb8d27136e95/v/i/webp/vinho-cantina-vignaioli-del-morellino-di-scansano-capoccia-ciliegiolo-maremma-toscana-doc-2506210629.png.webp" },
+            { id: 1048, name: "CEREMONY RUBY 750ml", price: 89.50, description: "Vinho do porto.", image: "https://images.tcdn.com.br/img/img_prod/1089127/vinho_do_porto_ceremony_ruby_750_ml_vallegre_149_1_b2f3450574aa2255597c1e5817481d44.jpg" },
+            { id: 1136, name: "CHARDONNAY RESERVA (PHEBUS-BODEGAS FABRE) 2023", price: 109.00, description: "Chardonnay Reserva Safra 2023.", image: "https://decantervinhos.vtexassets.com/arquivos/ids/159179-800-1040?v=638657443049730000&width=800&height=1040&aspect=true" },
+            { id: 1034, name: "CHATEAU DES LEOTINS AOP BORDEAUX ROUGE 2018", price: 169.00, description: "Bordeaux Rouge Safra 2018.", image: "https://images.tcdn.com.br/img/img_prod/1365829/chateau_leotins_rouge_111_1_9d758da040d98a780b10886791892ca2.jpg" },
+            { id: 1035, name: "CHATEAU DES LEOTINS AOP ENTRE DEUX MERS BLANC 2019", price: 169.00, description: "Entre Deux Mers Blanc Safra 2019.", image: "https://imgs.casasbahia.com.br/1564512981/1xg.jpg?imwidth=500" },
+            { id: 1033, name: "CHATEAU GRAVELIER BORDEAUX SAFRA 2020", price: 189.00, description: "Bordeaux Safra 2020.", image: "https://images.tcdn.com.br/img/img_prod/1365829/chateau_gravelier_109_1_a44dbb893f65e4ac35a6a64d447aef56.jpg" },
+            { id: 972, name: "CHATEAU LAMOLIERE AOC FRONSAC 2014", price: 439.00, description: "AOC Fronsac Safra 2014.", image: "https://images.tcdn.com.br/img/img_prod/1365829/chateau_lamoliere_107_1_a3a078b77a19520d42ca4ce92b4d9b3c.jpg" },
+            { id: 1283, name: "CHIANTI RISERVA DOCG TORREQUERCIE 750ML", price: 199.00, description: "Chianti Riserva DOCG.", image: "https://cdn.awsli.com.br/2500x2500/2682/2682177/produto/354811000/4c0b12ae437dea70da636b4b1244f573-9dcx44fvjn.jpg" },
+            { id: 871, name: "CHORINHO", price: 86.00, description: "Vinho Tinto.", image: "https://adegaalentejana.vteximg.com.br/arquivos/ids/155709-1000-1000/850.jpg?v=637794297351400000" },
+            { id: 841, name: "CHAMINE TN 750ml", price: 159.00, description: "Vinho Tinto.", image: "https://images.tcdn.com.br/img/img_prod/942842/chamine_tn_2019_750ml_1151_1_8606f179c463b24ce01394ac5b0efe0d.jpg" },
+            { id: 1171, name: "CODICI PUGLIA BRANCO BC750", price: 46.80, description: "Vinho Branco da Puglia.", image: "https://vivavinho.vtexassets.com/arquivos/ids/165842-800-auto?v=638972552502430000&width=800&height=auto&aspect=true" },
+            { id: 1305, name: "CODICI PUGLIA ROSE RS750", price: 59.00, description: "Vinho Rosé da Puglia.", image: "https://images.tcdn.com.br/img/img_prod/921139/codici_puglia_rosato_1057_1_884358d621b252cf4aa7c9a3971d681b.jpg" },
+            { id: 1306, name: "CODICI PUGLIA TINTO TT750", price: 59.00, description: "Vinho Tinto da Puglia.", image: "https://vivavinho.vtexassets.com/arquivos/ids/164938-800-auto?v=638646816135870000&width=800&height=auto&aspect=true" },
+            { id: 915, name: "COMTE DE DAUZAC BORDEAUX (CHATEAU DAUZAC) 2020", price: 206.90, description: "Bordeaux Safra 2020.", image: "https://decantervinhos.vtexassets.com/arquivos/ids/158438-800-1040?v=638370571577000000&width=800&height=1040&aspect=true" },
+            { id: 1127, name: "CORDERO COM PIEL DE LOBO MALBEC", price: 92.40, description: "Malbec Argentino.", image: "https://cdn.dooca.store/369/products/vinho-cordero-con-piel-de-lobo-malbec-argentina-750-ml-2_620x620.jpg?v=1710419741" },
+            { id: 1110, name: "DEINHARD GREEN LABEL RIESLING BC750", price: 146.00, description: "Riesling Green Label.", image: "https://cdn.dooca.store/45672/products/zcl9p8uxsiiwvle5upiioqe9vpqv79b7dtot_620x620+fill_ffffff.jpg?v=1689858567" },
+            { id: 1206, name: "ESPUMANTE DEDICATO MILESIMATO EXTRA DRY 750ml", price: 109.00, description: "Espumante Extra Dry.", image: "https://cdn.dooca.store/140489/products/dedicato-millesimato-espumante_1080x1080+fill_ffffff.png?v=1741823121" },
+            { id: 831, name: "DON GUERINO ESPUMANTE MOSCATEL 750 ML", price: 79.00, description: "Espumante Moscatel.", image: "https://images.tcdn.com.br/img/img_prod/838278/moscatel_45_1_20201110110947.jpg" },
+            { id: 826, name: "DON GUERINO RESERVA CABERNET SAUVIGNON 750 ML", price: 125.00, description: "Cabernet Sauvignon Reserva.", image: "https://espumantesdosul.com.br/cdn/shop/files/don-guerino-reserva-cabernet-sauvignon-don-guerino-6875484.png?v=1754425415&width=493" },
+            { id: 1294, name: "DONA PAULA ESTATE MALBEC", price: 158.00, description: "Malbec Dona Paula Estate.", image: "https://zaffari.vtexassets.com/arquivos/ids/284294-800-auto?v=638906245852830000&width=800&height=auto&aspect=true" },
+            { id: 1282, name: "DUFOULEUR PERE ET FILS CHARDONNAY 750 ML", price: 130.00, description: "Chardonnay Francês.", image: "https://cdn.awsli.com.br/2500x2500/2688/2688405/produto/266708122/dufouleur-chardonnay-vin-de-france-2022-2u5k5h7d3m.png" },
+            { id: 1079, name: "DUFOULEUR PINOT NOIR 750ML", price: 139.80, description: "Pinot Noir Francês.", image: "https://cdn.awsli.com.br/2500x2500/389/389471/produto/245678255/bourgogne-pinot-noir-dufouleur-p-re---fils-2020-b6prqszo7v.png" },
+            { id: 967, name: "DV CATENA CABERNET SAUVIGNON MALBEC 2024", price: 210.00, description: "Blend Cabernet/Malbec Safra 2024.", image: "https://cdn.mistral.com.br/products/37381/360/37381_1.png?v=20251110_152945" },
+            { id: 1279, name: "EA RESERVA TN 750ml", price: 172.00, description: "Tinto Reserva EA.", image: "https://adegaalentejana.vteximg.com.br/arquivos/ids/158012-1000-1000/669.png?v=638945131120500000" },
+            { id: 835, name: "EA TN 750ml", price: 84.00, description: "Vinho Tinto EA.", image: "https://adegaalentejana.vteximg.com.br/arquivos/ids/157190-1000-1000/216.png?v=638591664419700000" },
+            { id: 1071, name: "EL AFAN (G2 GONZALO GUZMAN) 2023", price: 249.00, description: "Vinho Tinto Safra 2023.", image: "https://decantervinhos.vtexassets.com/arquivos/ids/159694-800-1040?v=638852470581100000&width=800&height=1040&aspect=true" },
+            { id: 1021, name: "EL INCIDENT MERLOT 750ml", price: 220.00, description: "Merlot Tinto.", image: "https://cdn.awsli.com.br/2500x2500/2655/2655423/produto/261183576cf3c86e180.jpg" },
+            { id: 1272, name: "ESCUDO ROJO GRAN RES BLEND TT750", price: 208.00, description: "Blend Gran Reserva.", image: "https://acdn-us.mitiendanube.com/stores/001/358/168/products/escudo-rojo-gran-reserva-blend-2019-85599d292d12a1f60917057912824370-480-0.webp" },
+            { id: 1324, name: "ESCUDO ROJO GRAN RES CAB SAUV TT750", price: 190.00, description: "Cabernet Sauvignon Gran Reserva.", image: "https://www.scotchstore.com.br/img/products/vinho-escudo-rojo-gran-reserva-cabernet-sauvignon-750-ml_1_1000.webp" },
+            { id: 1269, name: "ESCUDO ROJO GRAN RES CARMENERE TT750", price: 170.00, description: "Carmenère Gran Reserva.", image: "https://www.viavini.com.br/media/catalog/product/cache/f1095ad49de8f2d2f84484e4c7734950/7/5/7588.png" }, 
+            { id: 1271, name: "ESCUDO ROJO GRAN RES CHARD BC750", price: 170.00, description: "Chardonnay Gran Reserva.", image: "https://www.scotchstore.com.br/img/products/vinho-escudo-rojo-gran-reserva-chardonnay-750-ml_1_1000.webp" },
+            { id: 1270, name: "ESCUDO ROJO GRAN RES PIN NOIR TT750", price: 190.00, description: "Pinot Noir Gran Reserva.", image: "https://cdn.awsli.com.br/2500x2500/389/389471/produto/347647321/escudo-rojo-gran-reserva-pinot-noir-42jqu80d7v.png" },
+            { id: 1144, name: "ESPUMANTE CAVA FREIXENET CORDON NEGRO BRUT 750 ML", price: 99.90, description: "Cava Brut.", image: "https://www.scotchstore.com.br/img/products/cava-freixenet-cordon-negro-750-ml_1_1000.webp" },
+            { id: 1211, name: "ESPUMANTE DEMI-SEC 750ML MONTE PASCHOAL", price: 47.00, description: "Espumante Demi-Sec.", image: "https://cdn.dooca.store/45672/products/rpc5wfkff8y6pthlnxg3lu2fl4niqlm7gzff_620x620+fill_ffffff.jpg?v=1702317039" },
+            { id: 1156, name: "ESPUMANTE MARAVI BRUT BC750", price: 64.00, description: "Espumante Brut.", image: "https://cdn.dooca.store/45672/products/u28w1o9fa6i7hr90bgv9djyqwblnnaipv4ga_620x620+fill_ffffff.jpg?v=1749836449" },
+            { id: 1177, name: "ESPUMANTE MARAVI MOSCATEL 750", price: 64.00, description: "Espumante Moscatel.", image: "https://cdn.dooca.store/141579/products/8vd3sfyzpdlfdnvkfnd3v6hwsdlxygf0gchq_1600x1600+fill_ffffff.jpg?v=1723637728" },
+            { id: 1258, name: "ESPUMANTE MARAVI ROSE BRUT RS750", price: 64.00, description: "Espumante Rosé Brut.", image: "https://www.scotchstore.com.br/img/products/espumante-entre-dois-mundos-maravi-brut-rose-750-ml_1_1000.webp" },
+            { id: 1212, name: "ESPUMANTE MOSCATEL BRANCO 750ML MAYOS", price: 54.00, description: "Espumante Moscatel.", image: "https://images.tcdn.com.br/img/img_prod/1209597/espumante_moscatel_branco_mayos_145_1_27b4a71dff2f9b7e1f230a4a4d00ccd1.png" },
+            { id: 1210, name: "ESPUMANTE PROSECCO 750ML MONTE PASCHOAL", price: 47.00, description: "Espumante Prosecco.", image: "https://vivavinho.vtexassets.com/arquivos/ids/164687-800-auto?v=638608946737400000&width=800&height=auto&aspect=true" },
+          
+            { id: 916, name: "ESPUMANTE FERRARI MAXIMUM BRUT", price: 398.90, description: "Espumante Ferrari Maximum Brut.", image: "https://decantervinhos.vtexassets.com/arquivos/ids/157004-800-1040?v=637993645867100000&width=800&height=1040&aspect=true" },
+            { id: 1174, name: "FERRATON LA TOURNEE ROSE RS750", price: 95.00, description: "Vinho Rosé.", image: "https://cdn.dooca.store/45672/products/bilnsluyiy7qkqrpjoojfp8azkxofrfpk0sv_620x620+fill_ffffff.jpg?v=1727814413" },
+            { id: 1175, name: "FERRATON LA TOURNEE TINTO TT750", price: 95.00, description: "Vinho Tinto.", image: "https://vivavinho.vtexassets.com/arquivos/ids/165680-800-auto?v=638899965984200000&width=800&height=auto&aspect=true" },
+            { id: 1173, name: "GRAN BODEGA TT750", price: 39.90, description: "Vinho Tinto.", image: "https://vivavinho.vtexassets.com/arquivos/ids/164998-800-auto?v=638682452480570000&width=800&height=auto&aspect=true" },
+            { id: 1064, name: "GRAN CHILANO RES SAUVIG BLANC BC750", price: 49.00, description: "Sauvignon Blanc Reserva.", image: "https://diawine.agilecdn.com.br/25200_1.jpg?v=82-1284595866" },
+            { id: 979, name: "GUSTAVETE EL MUDO MONASTRELL D.O ALICANTE", price: 213.00, description: "Monastrell D.O Alicante.", image: "https://images.tcdn.com.br/img/img_prod/1365829/gustavete_el_mudo_51_1_c1da5b7255cdf35b36e9eca92ceb9bb5.jpg" },
+            { id: 971, name: "HAZANA RESERVA D.O.C RIOJA", price: 429.00, description: "Rioja Reserva D.O.C.", image: "https://images.tcdn.com.br/img/img_prod/1365829/hazana_reserva_65_1_ddbb456d0608192c5b5ca310a67ac277.jpg" },
+            { id: 1257, name: "HERDADE DE SAO MIGUEL COLHEITA SELECIONADA TTO TT750", price: 140.00, description: "Tinto Colheita Selecionada.", image: "https://vivavinho.vtexassets.com/arquivos/ids/165439-800-auto?v=638822436831200000&width=800&height=auto&aspect=true" },
+            { id: 958, name: "JOAQUIM SAUVIGNON BLANC", price: 139.00, description: "Sauvignon Blanc Nacional.", image: "https://www.villafrancioni.com.br/header.php?sred%7Cimg_mod/produtos2/22_18-04-2024_10-40-05_9.jpg%7C700%7C800" },
+            { id: 1329, name: "KAIKEN ESTATE MALBEC", price: 119.00, description: "Malbec Kaiken Estate.", image: "https://vinsel.com.br/cdn/shop/files/f5b6702c17f43cdcbc44baad0c816a5a-163847.png?v=1731638530" },
+            { id: 965, name: "LA PETITE PERRIERE PINOT NOIR", price: 175.00, description: "Pinot Noir Francês.", image: "https://www.mistral.com.br/_next/image?url=https%3A%2F%2Fcdn.mistral.com.br%2Fproducts%2F39042%2Fimg_h_39042.png%3Fv%3D20251110_152119&w=750&q=75" },
+            { id: 1058, name: "LA ROCHE BRUT BC750", price: 74.00, description: "Espumante Brut.", image: "https://vivavinho.vtexassets.com/arquivos/ids/164219-800-auto?v=638374600441270000&width=800&height=auto&aspect=true" },
+          
+            { id: 1059, name: "LA ROCHE ROSE RS750", price: 74.00, description: "Espumante Rosé.", image: "https://dcdn-us.mitiendanube.com/stores/002/905/426/products/363677-espumante-la-roche-brut-rose-750ml-1-3a9777265f4ebb9c2d16970857204506-640-0.webp" },
+            { id: 1256, name: "LACERTILIA TANNAT TT750", price: 98.00, description: "Vinho Tinto Tannat.", image: "https://vivavinho.vtexassets.com/arquivos/ids/164778-1600-auto?v=638621812975400000&width=1600&height=auto&aspect=true" },
+            { id: 1109, name: "LAMBRUSCO SOGNO ITALIANO ROSSO TT750", price: 59.00, description: "Lambrusco Tinto.", image: "https://vivavinho.vtexassets.com/arquivos/ids/163862-1600-auto?v=638346402735970000&width=1600&height=auto&aspect=true" },
+            { id: 1196, name: "LA COLINA RESERVA CARMENERE 750ml", price: 87.00, description: "Carmenere Reserva.", image: "https://cdn.dooca.store/2698/products/izheclylscp4bmp1tah8dxfrawtk68cilqyc_600x800+fill_ffffff.png?v=1732020538" },
+            { id: 1198, name: "LA COLINA RESERVA SYRAH 750ml", price: 87.00, description: "Syrah Reserva.", image: "https://cdn.dooca.store/2698/products/ekmc6zuginvohy38qg0hfe73g0e6kdi5fudf_600x800+fill_ffffff.png?v=1732020811" },
+            { id: 1205, name: "LAMBRUSCO IPURI BIANCO 750ml", price: 65.00, description: "Lambrusco Branco.", image: "https://http2.mlstatic.com/D_NQ_NP_967255-MLA94043384346_102025-O.webp" },
+            { id: 1077, name: "LEVITY VERDE BRANCO BC750", price: 62.00, description: "Vinho Verde Branco.", image: "https://images.tcdn.com.br/img/img_prod/921139/levity_verde_branco_1029_1_c299473bcd402861e3ba9fe23545d0db.jpg" },
+            { id: 1303, name: "LEVITY VERDE ROSE RS750", price: 62.00, description: "Vinho Verde Rosé.", image: "https://images.tcdn.com.br/img/img_prod/921139/levity_verde_rose_40_1_6f5c8f00371fc91fb0505437593ebf26.jpg" },
+            { id: 1076, name: "LISBONITA TINTO TT750", price: 75.00, description: "Vinho Tinto de Lisboa.", image: "https://vivavinho.vtexassets.com/arquivos/ids/164800-1600-auto?v=638622672857430000&width=1600&height=auto&aspect=true" },
+            { id: 1330, name: "LOS CARDOS MALBEC 750ML", price: 98.00, description: "Malbec Argentino.", image: "https://zaffari.vtexassets.com/arquivos/ids/284679-800-auto?v=638911449468100000&width=800&height=auto&aspect=true" },
+            { id: 1281, name: "LOUISE DE VILLARD PINOT NOIR 2023 750ML", price: 130.00, description: "Pinot Noir Safra 2023.", image: "https://cdn.dooca.store/140489/products/louise-de-villard-pinot-noir_1080x1080+fill_ffffff.png?v=1742847102"},
+            { id: 1331, name: "MAYOS GREEN VINHO FRISANTE", price: 52.00, description: "Vinho Frisante.", image: "https://www.vinhosevinhos.com/media/catalog/product/cache/f551083cd20de7ac8cf7d25adc91480d/m/a/mayos-frisante-green.jpg" },
+            { id: 1158, name: "MENAGE A TROIS CABERNET SAUVIGNON", price: 199.00, description: "Tinto envelhecido em Barril de Bourbon.", image: "https://vivavinho.vtexassets.com/arquivos/ids/164974-800-auto?v=638666733900500000&width=800&height=auto&aspect=true" },
+            { id: 1277, name: "MILLAMAN LIMITED RESERVE CABERNET SAUVIGNON TN 750ml", price: 149.00, description: "Cabernet Sauvignon Reserva (Promoção).", image: "https://adegaalentejana.vteximg.com.br/arquivos/ids/155867-1000-1000/74.jpg?v=637794968755470000" },
+            { id: 1278, name: "MILLAMAN LIMITED RESERVE CARMENERE TN 750ml", price: 149.00, description: "Carmenere Reserva.", image: "https://adegaalentejana.vteximg.com.br/arquivos/ids/155870-1000-1000/76.jpg?v=637794969396800000" },
+            { id: 1323, name: "MONTGRAS DAY ONE GRAN RES CARM TTO", price: 120.00, description: "Carmenere Gran Reserva.", image: "https://cdn.awsli.com.br/2500x2500/389/389471/produto/339194898/montgras-day-one-gran-reserva-carm-n-re-crmod1mgak.png" },
+            { id: 957, name: "MORANDE ADVENTURE EL PADRE", price: 339.00, description: "Vinho Tinto Premium.", image: "https://images.tcdn.com.br/img/img_prod/499027/morande_adventure_el_padre_cabernet_franc_2018_3209_1_123d5bac2fca3d206f44984bc15a033d.png" },
+            { id: 948, name: "MORANDE TERRARUM RESERVA SAUVIGNON BLANC", price: 109.90, description: "Sauvignon Blanc Reserva.", image: "https://images.tcdn.com.br/img/img_prod/1089127/morande_terrarum_reserva_sauvignon_blanc_2022_750_ml_233_1_905c6c2f8174b6e3c4a82550dafc9d29.jpg" },
+            { id: 956, name: "MORANDE TERRARUM SELECTED BLOCKS CABERNET SAUVIGNON", price: 249.90, description: "Cabernet Sauvignon Selected Blocks.", image: "https://images.tcdn.com.br/img/img_prod/499027/morande_terrarum_selected_blocks_cabernet_sauvignon_2019_2759_1_1cf54c33d4aad58dcc88cdae2fe6b482.png" },
+  
+            { id: 838, name: "MONTE DO PINTOR TN 750ml", price: 149.90, description: "Vinho Tinto.", image: "https://adegaalentejana.vteximg.com.br/arquivos/ids/156840-1000-1000/23.jpg?v=638279017001200000" },
+            { id: 922, name: "MUROS ANTIGOS ALVARINHO (ANSELMO MENDES) 2023", price: 249.90, description: "Alvarinho Safra 2023.", image: "https://decantervinhos.vtexassets.com/arquivos/ids/158810-800-1040?v=638542432242600000&width=800&height=1040&aspect=true" },
+            { id: 1253, name: "OPTA DAO BRANCO BC750", price: 95.00, description: "Vinho Branco Dão.", image: "https://www.viavini.com.br/media/catalog/product/cache/f1095ad49de8f2d2f84484e4c7734950/v/i/vinho-opta-branco-branco-dao-opta.png" },
+            { id: 821, name: "ORBEN RIOJA TN", price: 280.90, description: "Vinho Tinto Rioja.", image: "https://adegaalentejana.vteximg.com.br/arquivos/ids/156427-1000-1000/1727.jpg?v=637916993080200000" },
+            { id: 866, name: "PAULO LAUREANO ALROCHEIRO TN 750ml", price: 359.90, description: "Alfrocheiro Tinto.", image: "https://adegaalentejana.vteximg.com.br/arquivos/ids/156825-1000-1000/719.jpg?v=638252819494830000" },
+            { id: 1280, name: "PAULO LAUREANO BIGODE TN 750ml", price: 89.00, description: "Vinho Tinto.", image: "https://adegaalentejana.vteximg.com.br/arquivos/ids/157210-1000-1000/1891.png?v=638597836227430000" },
+            { id: 1322, name: "PE BRANCO 750 ML", price: 65.00, description: "Vinho Branco Português.", image: "https://cdn.dooca.store/369/products/yarjjlzglihy2wg9ku1kszvxnu34zk095xzk_620x620.jpg?v=1673895800" },
+            { id: 1316, name: "PENALOLEN CARMENERE TTO 750ML", price: 195.00, description: "Carmenere Tinto.", image: "https://www.wine-searcher.com/images/labels/18/88/10561888.jpg?width=466&height=400&fit=bounds&format=auto&auto=compress&dpr=1&quality=70" },
+            { id: 1290, name: "PENEDO BORGES CEPAS CABERNET SAUVIGNON", price: 129.00, description: "Cabernet Sauvignon.", image: "https://cdn.awsli.com.br/2500x2500/2536/2536030/produto/196987785bda29e5f8b.jpg" },
+            { id: 1201, name: "PETIT MAYNNE PINOT NOIR 750ml", price: 170.00, description: "Pinot Noir Francês.", image: "https://images.tcdn.com.br/img/img_prod/769808/le_petite_maynne_pinot_noir_2018_65_1_20200423152140.png" },
+            { id: 890, name: "PONTE MOUCHAO TN 750 ml", price: 262.90, description: "Vinho Tinto.", image: "https://adegaalentejana.vteximg.com.br/arquivos/ids/155453-1000-1000/1623.jpg?v=637793326981030000" },
+            { id: 1024, name: "POGGIO DELCI SANGIOVESE - MAREMMA TOSCANA DOC 750ml", price: 162.00, description: "Sangiovese Maremma Toscana DOC.", image: "https://polarisbnu.com.br/wp-content/uploads/2021/11/2024-POGGIO-DELCI2-2.jpg" },
+            { id: 1287, name: "PRIMITIVO MANDURIA MANDORLA 750 ML", price: 190.00, description: "Primitivo de Manduria.", image: "https://cdn.shoppub.io/cdn-cgi/image/w=1000,h=1000,q=80,f=auto/botecodovinho/media/uploads/produtos/foto/bxphlfpq/6838aad2-2ce1-4603-9696-e9a917784555.png" },
+            { id: 1023, name: "PRIMITIVO MADRETERRA SALENTO 750ml", price: 145.00, description: "Primitivo Salento.", image: "https://www.vinhosmundi.com.br/image/cache/catalog/Italia/Polaris/Madreterra/Madreterra%20Primitivo-320x600.PNG" },
+            { id: 848, name: "PRIMITIVO PUGLIA TN 750ml", price: 135.00, description: "Primitivo da Puglia.", image: "https://adegaalentejana.vteximg.com.br/arquivos/ids/155789-1000-1000/115.jpg?v=637794943946430000" },
+            { id: 1292, name: "PUNTO LIMITE MALBEC RESERVA", price: 109.00, description: "Malbec Reserva.", image: "https://cdn.awsli.com.br/2500x2500/2682/2682177/produto/314136916/01f4cc142538bd0c42ca7c60953e6be8-xquv13t3lm.jpg" },
+            { id: 1291, name: "PUNTO LIMITE MALBEC ROSE", price: 90.00, description: "Malbec Rosé.", image: "https://cdn.awsli.com.br/2500x2500/2682/2682177/produto/314135863/1dbe3309043302618ac71f02b4507ebb-aapf890n4p.jpg" },
+            { id: 978, name: "QUINTA VALE DE FORNOS TOURIGA NACIONAL RESERVA DOC", price: 320.00, description: "Touriga Nacional Reserva DOC.", image: "https://casarioverde.vtexassets.com/arquivos/ids/166500-1600-auto?v=637447643349770000&width=1600&height=auto&aspect=true" },
+            { id: 1041, name: "RAVANAL GRAN RESERVA CARMENERE", price: 84.00, description: "Carmenere Gran Reserva.", image: "https://images.tcdn.com.br/img/img_prod/1257868/vinho_tinto_chileno_ravanal_gran_reserva_carmenere_750ml_1033_1_f1299c48798ce7f8b37615d14cdc9d14.jpg" },
+            { id: 1297, name: "ROVERSI BAROLO TT750", price: 349.00, description: "Vinho Tinto Barolo.", image: "https://winetrader.com.br/cdn/shop/files/UCDH51988582977445-964868ac-24d4-4b7c-9268-dcab83018bf6-1757518097846.png?v=1757593263&width=600" },
+            { id: 1187, name: "SAN TELMO CHARDONNAY BC750", price: 55.00, description: "Chardonnay.", image: "https://cdn.dooca.store/2980/products/02-1_1600x2000+fill_ffffff.jpg?v=1667578969" },
+            { id: 1307, name: "SAN TELMO MALBEC TT750", price: 44.00, description: "Malbec.", image: "https://vivavinho.vtexassets.com/arquivos/ids/165390-800-auto?v=638802560499870000&width=800&height=auto&aspect=true" },
+            { id: 1301, name: "SAN TELMO ROSE RS750", price: 44.00, description: "Vinho Rosé.", image: "https://vivavinho.vtexassets.com/arquivos/ids/165388-800-auto?v=638802476125700000&width=800&height=auto&aspect=true" },
+            { id: 1284, name: "SANTA ANGELICA CHARDONAY 750ML", price: 62.00, description: "Chardonnay.", image: "https://http2.mlstatic.com/D_NQ_NP_892611-MLB83389096063_032025-O.webp" },
+            { id: 1285, name: "SANTA ANGELICA SAUVIGNON BLANC 750ML", price: 62.00, description: "Sauvignon Blanc.", image: "https://adegabevy.com.br/wp-content/uploads/2025/09/156c28880a054e4b62998cb62e007445-2.png" },
+            { id: 1289, name: "SANTA JULIA TENSION LA RIBERA MALBEC PETIT VERDOT", price: 115.00, description: "Malbec Petit Verdot.", image: "https://cdn.awsli.com.br/2500x2500/2682/2682177/produto/2445632618733165ec7.jpg" },
+            { id: 1252, name: "SANVALENTIN TEMPRANILLO TT750", price: 98.00, description: "Tempranillo Tinto.", image: "https://vivavinho.vtexassets.com/arquivos/ids/164796-800-auto?v=638622023595300000&width=800&height=auto&aspect=true" },
+            { id: 1194, name: "SALVATTORE CABERNET FRANC 750ml", price: 106.00, description: "Cabernet Franc.", image: "https://www.vinhosevinhos.com/media/catalog/product/cache/f551083cd20de7ac8cf7d25adc91480d/s/a/salvattore-cabernet-franc.jpg" },
+            { id: 902, name: "SEM VERGONHA TN 750ml", price: 284.90, description: "Vinho Tinto.", image: "https://adeganova.com.br/wp-content/uploads/2025/04/15339172906-15339113768-8f43238e-9b4e-4e0d-9556-7944ff377ff9.jpg" },
+            { id: 1273, name: "SIGNOS MALBEC TT750", price: 62.00, description: "Malbec.", image: "https://vivavinho.vtexassets.com/arquivos/ids/165544-1600-auto?v=638846520943270000&width=1600&height=auto&aspect=true" },
+            { id: 1018, name: "SIN RODEO CABERNET SAUVIGNON 750ml", price: 94.00, description: "Cabernet Sauvignon.", image: "https://salescdn.net/u6Pc7vGTVhwSXu2HWz70x2ggRn8=/adaptive-fit-in/500x0/prod/store/13257/medias/products/sin-rodeo-cabernet-sauvignon-db05b3fd-0a2d-4536-a69d-f763247bc38a.webp" },
+            { id: 1016, name: "STAPHYLE PREMIUM BONARDA 750ml", price: 199.00, description: "Bonarda Premium.", image: "https://cdn.awsli.com.br/2500x2500/2655/2655423/produto/238614773/vinho-tinto-staphyle-premium-bonarda-o6k154l9p0.png" },
+            { id: 1326, name: "SUCO DE UVA NATURAL CASA BENTO 295ML", price: 16.00, description: "Suco de Uva Natural.", image: "https://static.extramercado.com.br/img/uploads/1/756/33246756.png" },
+            { id: 1276, name: "SUSANA BALBO SIGNATURE CAB SAUV TT750", price: 286.00, description: "Cabernet Sauvignon Signature.", image: "https://www.triplevino.com.br/image/cachewebp/catalog/vinhos/tinto/susanabalbosigcs-600x600.webp" },
+            { id: 929, name: "SYRAH LIMITED RELEASE (SUTIL) 2021", price: 169.90, description: "Syrah Limited Release Safra 2021.", image: "https://decantervinhos.vtexassets.com/arquivos/ids/159201-800-1040?v=638664125265600000&width=800&height=1040&aspect=true" },
+            { id: 1312, name: "TALO PRIMITIVO DI MANDURIA", price: 289.00, description: "Primitivo di Manduria.", image: "https://www.mistral.com.br/_next/image?url=https%3A%2F%2Fcdn.mistral.com.br%2Fproducts%2F38880%2Fimg_h_38880.png%3Fv%3D20251110_151540&w=750&q=75" },
+            { id: 858, name: "TERRA A TERRA RESERVA DOURO TN 750ml", price: 194.90, description: "Reserva Douro Tinto.", image: "https://adegaalentejana.vteximg.com.br/arquivos/ids/155710-1000-1000/284.jpg?v=637794297749430000" },
+            { id: 850, name: "TERRAS DE XISTO TN 750ml", price: 59.00, description: "Vinho Tinto.", image: "https://adegaalentejana.vteximg.com.br/arquivos/ids/155594-1000-1000/128.jpg?v=637793455543830000" },
+            { id: 1137, name: "TOMMASI AMARONE 750ML", price: 699.00, description: "Amarone.", image: "https://santaluzia.vtexassets.com/arquivos/ids/972445-800-auto?v=637385558386530000&width=800&height=auto&aspect=true" },
+            { id: 870, name: "TRES BAGOS RESERVA DOURO TN 750ml", price: 135.90, description: "Reserva Douro Tinto.", image: "https://winevins.com/cdn/shop/products/55.016345-01-tres-bagos-reserva-tinto-2019.png?v=1743286827&width=720" },
+            { id: 1275, name: "VENTISQUERO CLASICO CHARDONNAY BC750", price: 60.00, description: "Chardonnay Clássico.", image: "https://www.scotchstore.com.br/img/products/vinho-ventisquero-clasico-chardonnay-750-ml_1_1000.webp" },
+            { id: 1308, name: "VENTISQUERO CLASICO MERLOT TT 187ml", price: 23.00, description: "Merlot Clássico (Mini Garrafa).", image: "https://diawine.agilecdn.com.br/23768_1.jpg?v=82-2002044594" },
+            { id: 1274, name: "VENTISQUERO CLASICO SAUV BLANC BC750", price: 60.00, description: "Sauvignon Blanc Clássico.", image: "https://vivavinho.vtexassets.com/arquivos/ids/160229-1600-auto?v=637158146773570000&width=1600&height=auto&aspect=true" },
+                       { id: 1261, name: "VENTISQUERO QUEULAT PINOT NOIR TT750", price: 129.00, description: "Pinot Noir Queulat.", image: "https://dcdn-us.mitiendanube.com/stores/005/112/481/products/ventisquero-queulat-gran-reserva-pinot-noir-372a6b25cc8a18da3517551807667141-1024-1024.webp" },
+            { id: 1183, name: "VENTISQUERO RESERVA NETAO RB TT750", price: 80.00, description: "Vinho Tinto Reserva.", image: "https://vivavinho.vtexassets.com/arquivos/ids/165050-800-auto?v=638702096268670000&width=800&height=auto&aspect=true" },
+            { id: 1263, name: "VENTISQUERO RESERVA PINOT NOIR TT750", price: 110.00, description: "Pinot Noir Reserva.", image: "https://cdn.dooca.store/2980/products/ventisquero-reserva-pn_1600x2000+fill_ffffff.jpg?v=1740804758" },
+                       { id: 1157, name: "ESPUMANTE VEUVE DEVIENNE BRUT BC750", price: 95.00, description: "Espumante Brut.", image: "https://vivavinho.vtexassets.com/arquivos/ids/164297-1600-auto?v=638389500617670000&width=1600&height=auto&aspect=true" },
+            { id: 1225, name: "ESPUMANTE VEUVE DEVIENNE BRUT ROSE RS750", price: 95.00, description: "Espumante Brut Rosé.", image: "https://images.tcdn.com.br/img/img_prod/921139/espumante_veuve_devienne_brut_rose_1251_1_aa14b9d2699d409a005d5b1e265b7978.png" },
+            { id: 1232, name: "VILA NOVA VINHO VERDE BLEND BC750", price: 82.00, description: "Vinho Verde Branco.", image: "https://boccati.images.orangestore.cc/25YaoIzixiuc2i7tUglfadwls7o=/fit-in/456x751/filters:quality(100):fill(ffffff,1)/n49shopv2_boccatispa/images/products/67800e3fe9785/25752_vinho_vila_nova_vinho_verde_750ml-67800e3fe9872.jpg" },
+            { id: 1321, name: " PE TINTO 750 ML", price: 65.00, description: "Vinho Tinto Português.", image: "https://vivavinho.vtexassets.com/arquivos/ids/165445-800-auto?v=638824446358570000&width=800&height=auto&aspect=true" },
+            { id: 1219, name: "VINOH OAK CHARDONNAY - FERMENTADO DE UVA DESALCOOLIZADO BRANCO SECO 750ml", price: 120.00, description: "Chardonnay Desalcoolizado.", image: "https://static.wixstatic.com/media/1fc9e9_6c20f27cece6422f89e5ce99ff264bea~mv2.png/v1/crop/x_184,y_0,w_712,h_1080/fill/w_219,h_332,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/OAK%20Chardonnay.png" },
+            { id: 1221, name: "VINOH SELECT CABERNET SAUVIGNON - FERMENTADO DE UVA DESALCOOLIZADO TINTO SECO", price: 90.00, description: "Cabernet Sauvignon Desalcoolizado.", image: "https://static.wixstatic.com/media/1fc9e9_8daeabb6da484a5d9261b62a841b8711~mv2.png/v1/crop/x_184,y_0,w_712,h_1080/fill/w_182,h_276,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Select%20Cabernet.png" },
+                        { id: 1222, name: "VINOH SELECT SUAVE - MERLOT & CABERNET SAUVIGNON - FERMENTADO DE UVA DESALCOOLIZADO TINTO ADOCADO 750 ml", price: 90.00, description: "Suave Desalcoolizado.", image: "https://static.wixstatic.com/media/1fc9e9_691db2469dfa4b6eab329f3866774260~mv2.png/v1/crop/x_184,y_0,w_712,h_1080/fill/w_182,h_276,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Select%20Suave.png" },
+            { id: 1014, name: "VM CHARDONNAY 750ml", price: 110.00, description: "Chardonnay.", image: "https://salescdn.net/IDjt1jXZZTvc2P9n2IScKsH0OG8=/adaptive-fit-in/500x0/prod/store/13257/medias/products/vidal-macciardi-blanc-de-blancs-2022-130589e0-c69c-4640-a6b1-6c89d0f8ae1c.webp" },
+            { id: 930, name: "VONTADE (G2 GONZALO GUZMAN) 2021", price: 231.90, description: "Vinho Tinto Safra 2021.", image: "https://decantervinhos.vtexassets.com/arquivos/ids/159240-800-1040?v=638670205174000000&width=800&height=1040&aspect=true" },
+            { id: 1111, name: "WAVE BRANCO BC750", price: 68.00, description: "Vinho Branco.", image: "https://vivavinho.vtexassets.com/arquivos/ids/164066-1600-auto?v=638360788533030000&width=1600&height=auto&aspect=true" },
+            { id: 1300, name: "YELLOW TAIL MOSCATO BC750", price: 85.00, description: "Moscato.", image: "https://vivavinho.vtexassets.com/arquivos/ids/165118-800-auto?v=638725703541230000&width=800&height=auto&aspect=true" },
+            { id: 1108, name: "YELLOW TAIL SYRAH TT750", price: 89.00, description: "Syrah.", image: "https://images.tcdn.com.br/img/img_prod/1054850/vinho_australiano_yellow_tail_syrah_tinto_750ml_499_1_c677dc06cc98367bb99a922231a449c0.png" }
+        ];
+
+        // Mapeia os produtos por ID para fácil acesso
+        const productsMap = product_data.reduce((acc, product) => {
+            acc[product.id] = product;
+            return acc;
+        }, {});
+
+
+        // --- FUNÇÕES DO CATÁLOGO (Atualizadas) ---
+
+        // Função para formatar preço em BRL
+        const formatPrice = (price) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
+
+        function renderCatalog(items) {
+            const container = document.getElementById('catalog');
+            container.innerHTML = "";
+
+            if (items.length === 0) {
+                container.innerHTML = "<p style='grid-column: 1/-1; text-align:center; padding: 20px;'>Nenhum produto encontrado.</p>";
+                return;
+            }
+
+            items.forEach(product => {
+                const priceFormatted = formatPrice(product.price);
+                // Adiciona uma imagem placeholder genérica que aparece se você não inserir o link
+                const imageSrc = product.image === "IMAGEM_AQUI" ? "https://placehold.co/400x300/e0e0e0/333333?text=Vinho" : product.image;
+
+                container.innerHTML += `
+                    <div class="card">
+                        <img src="${imageSrc}" alt="${product.name}" loading="lazy">
+                        <div class="card-content">
+                            <div>
+                                <h3>${product.name}</h3>
+                                <p>${product.description}</p>
+                            </div>
+                            <div>
+                                <div class="price">${priceFormatted}</div>
+                                <button onclick="addToCart(${product.id})" class="btn btn-add-to-cart">
+                                    <span class="material-icons" style="vertical-align: middle; font-size: 1.1em;">add_shopping_cart</span> Adicionar ao Carrinho
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- LÓGICA DO CARRINHO (NOVA) ---
+        
+        const cartModal = document.getElementById('cart-modal');
+        const cartItemsList = document.getElementById('cart-items-list');
+        const totalValueSpan = document.getElementById('total-value');
+        const cartCountSpan = document.getElementById('cart-count');
+        const btnWhatsappOrder = document.getElementById('btn-whatsapp-order');
+        const emptyCartMessage = document.getElementById('empty-cart-message');
+
+        // Carrega o carrinho do localStorage ou retorna um carrinho vazio
+        function getCart() {
+            try {
+                return JSON.parse(localStorage.getItem('vineriaCart')) || [];
+            } catch (e) {
+                console.error("Erro ao ler carrinho do localStorage:", e);
+                return [];
+            }
+        }
+
+        // Salva o carrinho no localStorage
+        function saveCart(cart) {
+            localStorage.setItem('vineriaCart', JSON.stringify(cart));
+            updateCartDisplay();
+        }
+
+        // Adiciona um produto ao carrinho
+        window.addToCart = function(productId) {
+            let cart = getCart();
+            const existingItem = cart.find(item => item.id === productId);
+
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                const product = productsMap[productId];
+                if (product) {
+                    cart.push({
+                        id: productId,
+                        name: product.name,
+                        price: product.price,
+                        quantity: 1
+                    });
+                }
+            }
+
+            saveCart(cart);
+            // REMOVIDO: alert(`"${productsMap[productId].name}" adicionado ao carrinho!`);
+        }
+        
+        // Remove item do carrinho (ou diminui a quantidade)
+        window.updateCartItem = function(productId, action) {
+            let cart = getCart();
+            const itemIndex = cart.findIndex(item => item.id === productId);
+            
+            if (itemIndex > -1) {
+                if (action === 'increment') {
+                    cart[itemIndex].quantity++;
+                } else if (action === 'decrement') {
+                    cart[itemIndex].quantity--;
+                    if (cart[itemIndex].quantity <= 0) {
+                        cart.splice(itemIndex, 1); // Remove se a quantidade for 0
+                    }
+                } else if (action === 'remove') {
+                    cart.splice(itemIndex, 1);
+                }
+            }
+
+            saveCart(cart);
+            renderCartItems(); // Atualiza a lista no modal
+        }
+
+        // Renderiza os itens dentro do modal
+        function renderCartItems() {
+            const cart = getCart();
+            cartItemsList.innerHTML = '';
+            let total = 0;
+
+            if (cart.length === 0) {
+                emptyCartMessage.style.display = 'block';
+                btnWhatsappOrder.style.display = 'none';
+                totalValueSpan.textContent = formatPrice(0);
+                return;
+            }
+
+            emptyCartMessage.style.display = 'none';
+            btnWhatsappOrder.style.display = 'block';
+
+            cart.forEach(item => {
+                const subtotal = item.price * item.quantity;
+                total += subtotal;
+                
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <div class="item-info">
+                        <h4>${item.name}</h4>
+                        <p>${formatPrice(item.price)} (unidade)</p>
+                    </div>
+                    <div class="item-controls">
+                        <button onclick="updateCartItem(${item.id}, 'decrement')">-</button>
+                        <input type="number" value="${item.quantity}" min="1" readonly>
+                        <button onclick="updateCartItem(${item.id}, 'increment')">+</button>
+                        <button onclick="updateCartItem(${item.id}, 'remove')" class="remove-btn">
+                            <span class="material-icons" style="font-size: 1.1em;">delete</span>
+                        </button>
+                    </div>
+                    <div class="item-price">${formatPrice(subtotal)}</div>
+                `;
+                cartItemsList.appendChild(listItem);
+            });
+
+            totalValueSpan.textContent = formatPrice(total);
+            generateWhatsappLink(cart, total);
+        }
+
+        // Atualiza o contador de itens e o link do WhatsApp
+        function updateCartDisplay() {
+            const cart = getCart();
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCountSpan.textContent = totalItems;
+            
+            // Re-renderiza o modal se ele estiver aberto
+            if (cartModal.style.display === 'block') {
+                renderCartItems();
+            }
+        }
+
+        // Gera o link completo do WhatsApp com a lista de itens
+        function generateWhatsappLink(cart, total) {
+            let message = "Olá! Gostaria de fazer o seguinte pedido:\n\n";
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                const priceFormatted = formatPrice(item.price);
+                const itemTotalFormatted = formatPrice(itemTotal);
+                message += `* ${item.quantity}x - ${item.name} (Unidade: ${priceFormatted}, Total: ${itemTotalFormatted})\n`;
+            });
+            
+            const totalFormatted = formatPrice(total);
+            message += `\n*TOTAL DO PEDIDO:* ${totalFormatted}`;
+            message += `\n\nAguardando o próximo passo! (ID do Pedido: ${Date.now()})`; // Adiciona um ID de pedido para rastreio
+
+            const link = `https://wa.me/${MEU_WHATSAPP}?text=${encodeURIComponent(message)}`;
+            btnWhatsappOrder.href = link;
+        }
+
+
+        // --- EVENT LISTENERS ---
+
+        // Abrir/Fechar Modal
+        document.getElementById('cart-float-btn').addEventListener('click', () => {
+            renderCartItems(); // Garante que o conteúdo esteja atualizado
+            cartModal.style.display = 'block';
+        });
+
+        document.querySelector('.close-btn').addEventListener('click', () => {
+            cartModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === cartModal) {
+                cartModal.style.display = 'none';
+            }
+        });
+        
+        // Filtro de Busca (Lógica Mantida)
+        document.getElementById('search-bar').addEventListener('keyup', (e) => {
+            const term = e.target.value.toLowerCase();
+            renderCatalog(product_data.filter(p => p.name.toLowerCase().includes(term) || p.description.toLowerCase().includes(term) || p.id.toString().includes(term)));
+        });
+
+        // Inicialização
+        updateCartDisplay();
+        renderCatalog(product_data);
+    </script>
+</body>
+</html>
